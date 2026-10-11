@@ -31,13 +31,21 @@ async def test_get(server: TestServer) -> None:
     [
         pytest.param("invalid://example.org", id="scheme-not-http(s)"),
         pytest.param("://example.org", id="no-scheme"),
-        pytest.param("http://", id="no-host"),
     ],
 )
 @pytest.mark.anyio
 async def test_get_invalid_url(server: TestServer, url: str) -> None:
     async with httpx2.AsyncClient() as client:
         with pytest.raises((httpx2.UnsupportedProtocol, httpx2.LocalProtocolError)):
+            await client.get(url)
+
+
+@pytest.mark.parametrize("url", ["http://", "https:/example.org", "https:example.org", "mailto:user@example.org"])
+@pytest.mark.parametrize("base_url", ["", "https://www.example.com/"])
+@pytest.mark.anyio
+async def test_get_url_with_scheme_and_no_host(url: str, base_url: str) -> None:
+    async with httpx2.AsyncClient(base_url=base_url) as client:
+        with pytest.raises(httpx2.InvalidURL, match="URL has a scheme but no host"):
             await client.get(url)
 
 
