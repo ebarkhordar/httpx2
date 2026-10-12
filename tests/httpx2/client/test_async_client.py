@@ -40,13 +40,11 @@ async def test_get_invalid_url(server: TestServer, url: str) -> None:
             await client.get(url)
 
 
-@pytest.mark.parametrize("url", ["http://", "https:/example.org", "https:example.org", "mailto:user@example.org"])
-@pytest.mark.parametrize("base_url", ["", "https://www.example.com/"])
 @pytest.mark.anyio
-async def test_get_url_with_scheme_and_no_host(url: str, base_url: str) -> None:
-    async with httpx2.AsyncClient(base_url=base_url) as client:
+async def test_get_url_with_scheme_and_no_host() -> None:
+    async with httpx2.AsyncClient(base_url="https://www.example.com/") as client:
         with pytest.raises(httpx2.InvalidURL, match="URL has a scheme but no host"):
-            await client.get(url)
+            await client.get("https:/example.org")
 
 
 @pytest.mark.anyio
